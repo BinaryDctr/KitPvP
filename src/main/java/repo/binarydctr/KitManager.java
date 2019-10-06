@@ -1,24 +1,16 @@
 package repo.binarydctr;
 
-import org.bukkit.*;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.java.JavaPlugin;
-import repo.binarydctr.kits.*;
+import repo.binarydctr.kits.Kit;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * ******************************************************************
@@ -31,166 +23,92 @@ import java.util.List;
  **/
 public class KitManager implements Listener {
 
-    JavaPlugin plugin;
+    private ItemStack kitSelector;
 
-    Kit[] kits;
+    private KitPvP plugin;
+    private Set<Kit> kits;
+    private Map<UUID, Kit> kitMap;
+    private Map<Integer, Kit> kitInventoryMap;
 
-    static KitManager instance;
+    private static KitManager instance;
 
-    public KitManager(JavaPlugin plugin) {
+    public KitManager(KitPvP plugin) {
         this.plugin = plugin;
         instance = this;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        kits = new Kit[]{new Knight(), new Archer(), new Warrior()};
+        this.kits = plugin.getKitConfig().getKits();
+
+        kitInventoryMap = new HashMap<>();
+        kitMap = new HashMap<>();
+
+        initKitSelector();
+    }
+
+    /**
+     * Initializes the Global Kit Selector
+     */
+    private void initKitSelector() {
+        // Init Item
+        kitSelector = new ItemStack(Material.COMPASS);
+        ItemMeta itemMeta = kitSelector.getItemMeta();
+        itemMeta.setDisplayName(ChatColor.YELLOW + "Kit Selector");
+        itemMeta.setLore(Arrays.asList(ChatColor.GRAY + "Right-Click to open menu."));
+        kitSelector.setItemMeta(itemMeta);
+
+        // Init Kit Inventory Map
+        int i = 0;
         for (Kit kit : kits) {
-            plugin.getServer().getPluginManager().registerEvents(kit, plugin);
+            kitInventoryMap.put(i, kit);
+            i++;
         }
     }
 
-    @EventHandler
-    public void onRightClick(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
+    /**
+     * Prepares the Kit Inventory for the player
+     *
+     * @param player The player to use
+     * @return The prepared Inventory
+     */
+    public Inventory prepareKitInventory(Player player) {
+        Inventory inventory = Bukkit.createInventory(null, 54, "Kits");
 
-        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (player.getItemInHand().equals(getKitSelector())) {
-                player.openInventory(getKitInventory(player));
-            }
-        }
-
-    }
-
-    Inventory inventory;
-
-    public Inventory getKitInventory(Player player) {
-        inventory = Bukkit.createInventory(null, 54, "Kits");
-        for (Kit kit : kits) {
+        for (Map.Entry<Integer, Kit> entry : kitInventoryMap.entrySet()) {
+            Kit kit = entry.getValue();
             if (player.hasPermission(kit.getPermission()) || player.isOp()) {
-                inventory.addItem(kit.displayItem());
-            } else {
-                ItemStack itemStack = new ItemStack(Material.REDSTONE);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.setDisplayName(ChatColor.RED + "UNKNOWN KIT");
-                itemStack.setItemMeta(itemMeta);
-                inventory.addItem(itemStack);
+                inventory.setItem(entry.getKey(), kit.getIcon());
+                continue;
             }
+
+            ItemStack itemStack = new ItemStack(Material.REDSTONE);
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            itemMeta.setDisplayName(ChatColor.RED + "UNKNOWN KIT");
+            itemStack.setItemMeta(itemMeta);
+            inventory.setItem(entry.getKey(), itemStack);
         }
 
         return inventory;
     }
 
-    @EventHandler
-    public void onItemClick(InventoryClickEvent event) {
-        if (event.getInventory().getTitle().contains("Kits")) {
-            if (event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) {
-                return;
-            }
-
-            event.setCancelled(true);
-
-            for (Kit kit : kits) {
-                if (event.getCurrentItem().equals(kit.displayItem())) {
-                    if (event.isRightClick()) {
-                        event.getWhoClicked().closeInventory();
-                        event.getWhoClicked().openInventory(kit.kitPreview());
-                    } else if (event.isLeftClick()) {
-                        event.getWhoClicked().closeInventory();
-                        kit.apply((Player) event.getWhoClicked());
-                    }
-                }
-            }
-
-            if (event.getCurrentItem().getItemMeta().getDisplayName().contains("UNKNOWN KIT")) {
-                event.getWhoClicked().closeInventory();
-                event.getWhoClicked().sendMessage("This kit seems to be unknown.");
-            }
-        }
-
-        if (event.getInventory().getTitle().contains("Kit Preview")) {
-            if (event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) {
-                return;
-            }
-
-            event.setCancelled(true);
-        }
-    }
-
     public ItemStack getKitSelector() {
-        ItemStack itemStack = new ItemStack(Material.COMPASS);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setDisplayName(ChatColor.YELLOW + "Kit Selector");
-        List<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.GRAY + "Right-Click to open menu.");
-        itemMeta.setLore(lore);
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
-    }
-
-    @EventHandler
-    public void onDeath(PlayerDeathEvent event) {
-        Player player = event.getEntity();
-
-        event.setDeathMessage("");
-        player.setHealth(20);
-        player.getInventory().clear();
-        event.setDroppedExp(0);
-        Kit kit = getPlayerKit(player);
-        if (kit != null) {
-            kit.getPlayers().remove(player);
-        }
-
-        if (player.getKiller() == null) {
-            player.teleport(player.getWorld().getSpawnLocation());
-            event.setKeepInventory(true);
-            player.getInventory().clear();
-            player.getInventory().setItem(0, getKitSelector());
-            event.setDeathMessage(player.getName() + " has died from an unknown cause.");
-            return;
-        }
-
-        Player killer = event.getEntity().getKiller();
-
-        player.teleport(player.getWorld().getSpawnLocation());
-        event.setKeepInventory(true);
-        player.getInventory().clear();
-        player.getInventory().setItem(0, getKitSelector());
-
-        event.setDeathMessage(killer.getName() + " has killed " + player.getName());
+        return this.kitSelector;
     }
 
     public Kit getPlayerKit(Player player) {
-        for (KitType kitType : KitType.values()) {
-            Kit kit = kitType.getKit();
-            if (kit.getPlayers().contains(player)) {
-                return kit;
-            }
-        }
-        return null;
-    }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        player.setHealth(20);
-        player.setFoodLevel(20);
-        player.getInventory().clear();
-        player.getInventory().setArmorContents(null);
-        player.getInventory().setItem(0, getKitSelector());
-
-        player.teleport(player.getWorld().getSpawnLocation());
-    }
-
-    @EventHandler
-    public void onLeave(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-
-        Kit kit = getPlayerKit(player);
-        if (kit != null) {
-            kit.getPlayers().remove(player);
-        }
+        return kitMap.getOrDefault(player.getUniqueId(), null);
     }
 
     public static KitManager getInstance() {
         return instance;
     }
 
+    public Map<Integer, Kit> getKitInventoryMap() {
+        return kitInventoryMap;
+    }
+
+    public Map<UUID, Kit> getKitMap() {
+        return kitMap;
+    }
+
+    public Set<Kit> getKits() {
+        return kits;
+    }
 }
