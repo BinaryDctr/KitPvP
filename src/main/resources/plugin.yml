@@ -2,4 +2,3 @@ name: ${project.name}
 version: ${project.version}
 main: repo.binarydctr.KitPvP
 author: BinaryDctr
-commands:

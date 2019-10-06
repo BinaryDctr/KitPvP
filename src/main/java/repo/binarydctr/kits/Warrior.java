@@ -90,9 +90,7 @@ public class Warrior extends Kit {
         }
 
         if (event.isSneaking()) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 3, 200));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 3, 200));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 3, 200));
+
         }
     }
 }

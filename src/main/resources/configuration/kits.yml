@@ -1,0 +1,41 @@
+kits:
+  archer:
+    permission: kitpvp.archer
+    entity: skeleton
+    special_attacks:
+      - leap;on:item,iron_sword;velocity:2.0
+    icon: bow
+    items:
+      - stone_sword
+      - bow
+      - arrow,amount:64
+      - leather_helmet
+      - leater_chestplate
+      - leater_leggins
+      - leater_boots
+  warrior:
+    permission: kitpvp.warrior
+    entity: zombie
+    special_attacks:
+      - strength;on:shift;duration:3;amplifier:200
+    icon: iron_sword
+    items:
+      - diamond_axe
+      - iron_helmet
+      - iron_chestplate
+      - iron_leggins
+      - iron_boots
+      - bow
+      - arrow,amount:16
+  knight:
+    permission: kitpvp.knight
+    entity: enderman
+    special_attack:
+      - knock_player;on:item,iron_sword;action:click_air;radius:5.0;damage:5.0;velocity:-2.0
+    icon: iron_sword
+    items:
+      - iron_sword
+      - iron_helmet
+      - diamond_chestplate
+      - iron_leggins
+      - iron_boots

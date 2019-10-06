@@ -90,8 +90,7 @@ public class Archer extends Kit {
 
         if (action == Action.RIGHT_CLICK_AIR) {
             if (player.getItemInHand().getType() == Material.STONE_SWORD) {
-                player.setVelocity(player.getEyeLocation().getDirection().multiply(2.0));
-                player.sendMessage(ChatColor.BLUE + "You used leap.");
+
             }
         }
     }
