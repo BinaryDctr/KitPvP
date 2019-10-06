@@ -3,7 +3,9 @@ package repo.binarydctr.kits;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import repo.binarydctr.EntityParser;
 import repo.binarydctr.ItemParser;
 import repo.binarydctr.KitPvP;
 import repo.binarydctr.attacks.SpecialAttack;
@@ -56,10 +58,9 @@ public class KitConfiguration {
 
         for (String key : configSection.getKeys(false)) {
             try {
-                String name = key;
 
+                // The Kit Permission
                 String permission = configSection.getString(key + ".permission");
-
 
                 // Parsing Icon of Kit
                 ItemStack icon = ItemParser.parse(configSection.getString(key + ".icon"));
@@ -67,13 +68,20 @@ public class KitConfiguration {
                 List<ItemStack> items = new ArrayList<>();
                 Collection<SpecialAttack> attacks = new HashSet<>();
 
-
                 // Parsing all items in kit
-                for (String item : configSection.getStringList(key + ".items")) items.add(ItemParser.parse(item));
+                for (String item : configSection.getStringList(key + ".items"))
+                    items.add(ItemParser.parse(item));
 
+                // Parsing all special attacks
+                for (String attack : configSection.getStringList(key + ".special_attacks"))
+                    attacks.add(SpecialAttack.parse(attack));
 
+                Entity entity = EntityParser.parse(configSection.getString(key + ".entity"));
 
-            } catch (IllegalArgumentException e) {
+                kits.add(new Kit(key, icon, entity, attacks, items, permission));
+                plugin.getLogger().log(Level.INFO, "Kit '" + key + "' successfully loaded");
+
+            } catch (Exception e) {
                 plugin.getLogger().log(Level.INFO, "[ERROR] Something went wrong while parsing kit '" + key + "'");
                 e.printStackTrace();
             }

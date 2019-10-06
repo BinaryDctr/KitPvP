@@ -1,7 +1,6 @@
 package repo.binarydctr.attacks.activator;
 
 import org.bukkit.event.Event;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 /**

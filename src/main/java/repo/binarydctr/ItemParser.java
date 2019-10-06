@@ -79,9 +79,16 @@ public class ItemParser {
                 mat = mat.replace(":" + d[1], "");
             }
 
+            Material material;
+            if (StringUtils.isNumeric(mat)) material = Material.getMaterial(Integer.parseInt(mat));
+            else {
+                material = Material.matchMaterial(mat);
+            }
 
-            if (StringUtils.isNumeric(mat)) return new ItemStack(Material.getMaterial(Integer.parseInt(mat)), 1, data);
-            else return new ItemStack(Material.getMaterial(mat), 1, data);
+            if (material == null)
+                throw new IllegalArgumentException("The material '" + mat + "' could not be found");
+
+            return new ItemStack(material, 1, data);
 
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(e);

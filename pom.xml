@@ -40,8 +40,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -63,6 +63,7 @@
                 <directory>${basedir}/src/main/resources</directory>
                 <includes>
                     <include>*.yml</include>
+                    <include>configuration/*</include>
                 </includes>
             </resource>
         </resources>
