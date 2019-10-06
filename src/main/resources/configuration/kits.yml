@@ -31,7 +31,7 @@ kits:
     permission: kitpvp.knight
     entity: enderman
     special_attack:
-      - knock_player;on:item,iron_sword;action:click_air;radius:5.0;damage:5.0;velocity:-2.0
+      - knock_player;on:item,iron_sword;radius:5.0;damage:5;velocity:-2.0
     icon: iron_sword
     items:
       - iron_sword

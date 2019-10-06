@@ -7,6 +7,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
+ * The Item Activator can be used to activated when a certain Item has been clicked <br>
  * Created by Florian Hergenhahn at 2019-10-06 <br>
  *
  * @author Florian Hergenhahn
@@ -16,8 +17,11 @@ public class ItemActivator extends Activator {
     private static final Class[] APPLICABLE_CLASSES = {PlayerInteractEvent.class};
     private final ItemStack item;
 
-    public ItemActivator(ActivatorCallback callback, ItemStack item) {
-        super(callback, APPLICABLE_CLASSES);
+    /**
+     * @param item     The Item to check for
+     */
+    public ItemActivator(ItemStack item) {
+        super(APPLICABLE_CLASSES);
         this.item = item;
     }
 
